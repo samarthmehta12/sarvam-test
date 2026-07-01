@@ -115,6 +115,14 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
     border: 1px solid #E8E2DC !important;
     color: #111 !important;
     border-radius: 8px !important;
+    box-shadow: none !important;
+    caret-color: #333 !important;
+}
+
+[data-testid="stSidebar"] .stTextInput input:focus {
+    border-color: #E8E2DC !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 [data-testid="stSidebar"] .stTextInput input::placeholder { color: #BBB !important; }
@@ -124,6 +132,7 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
     border: 1px solid #E8E2DC !important;
     border-radius: 8px !important;
     color: #111 !important;
+    box-shadow: none !important;
 }
 
 /* ── File uploader ── */
@@ -385,20 +394,23 @@ button[aria-label^="Remove "]::after {
 
 /* ── Input form area ── */
 .stTextArea textarea {
-    background: #FFFFFF !important;
-    border: 1.5px solid #E8E2DC !important;
-    border-radius: 12px !important;
+    background: #F8F6F3 !important;
+    border: 1px solid #E8E2DC !important;
+    border-radius: 8px !important;
     font-size: 0.95rem !important;
     color: #111 !important;
     resize: none !important;
+    box-shadow: none !important;
+    caret-color: #333 !important;
 }
 
 .stTextArea textarea:focus {
-    border-color: #F26522 !important;
-    box-shadow: 0 0 0 3px rgba(242, 101, 34, 0.12) !important;
+    border-color: #E8E2DC !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-.stTextArea textarea::placeholder { color: #AAA !important; }
+.stTextArea textarea::placeholder { color: #BBB !important; }
 
 /* Image uploader label in form */
 [data-testid="stForm"] [data-testid="stFileUploader"] label { color: #555 !important; font-size: 0.85rem !important; }

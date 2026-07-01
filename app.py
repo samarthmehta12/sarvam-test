@@ -503,13 +503,13 @@ def upload_pdf(client: genai.Client, pdf_bytes: bytes, display_name: str):
             file=tmp_path,
             config=types.UploadFileConfig(mime_type="application/pdf", display_name=display_name),
         )
-        for _ in range(60):
+        for _ in range(120):
             info = client.files.get(name=uploaded.name)
             if info.state.name == "ACTIVE":
                 return info
             if info.state.name == "FAILED":
                 raise RuntimeError("File processing failed.")
-            time.sleep(2)
+            time.sleep(1)
         raise TimeoutError("File processing timed out.")
     finally:
         os.unlink(tmp_path)
@@ -520,6 +520,8 @@ def create_chat(client: genai.Client, manual_file, language: str):
         model=MODEL_NAME,
         config=types.GenerateContentConfig(
             system_instruction=build_system_instruction(language),
+            # Disable internal thinking — cuts query latency by 3-8s
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         ),
     )
     chat.send_message([
@@ -547,7 +549,10 @@ def extract_maintenance(client: genai.Client, manual_file) -> list:
 
 def text_to_speech(text: str, language: str) -> bytes:
     lang_code = TTS_LANG_MAP.get(language, "en")
-    tts = gTTS(text=text, lang=lang_code, slow=False)
+    # Truncate to ~600 chars to keep audio generation fast; strip markdown symbols
+    clean = text.replace("**", "").replace("*", "").replace("#", "").replace("`", "")
+    clean = clean[:600].rsplit(" ", 1)[0] if len(clean) > 600 else clean
+    tts = gTTS(text=clean, lang=lang_code, slow=False)
     buf = io.BytesIO()
     tts.write_to_fp(buf)
     buf.seek(0)
@@ -779,19 +784,19 @@ if True:
         st.session_state.display_history.append({"role": "user", "text": text, "image_bytes": img_bytes})
 
         with st.chat_message("assistant", avatar="🏍️"):
-            with st.spinner("Consulting your manual…"):
-                answer = None
-                for attempt in range(3):
-                    try:
-                        response = st.session_state.chat.send_message(parts)
-                        answer = response.text
-                        break
-                    except Exception as exc:
-                        if "503" in str(exc) and attempt < 2:
-                            time.sleep(5)
-                            continue
-                        answer = f"⚠️ Error: {exc}"
+            answer = None
+            for attempt in range(3):
+                try:
+                    stream = st.session_state.chat.send_message_stream(parts)
+                    answer = st.write_stream(chunk.text for chunk in stream if chunk.text)
+                    break
+                except Exception as exc:
+                    if "503" in str(exc) and attempt < 2:
+                        time.sleep(5)
+                        continue
+                    answer = f"⚠️ Error: {exc}"
+                    st.error(answer)
 
-        st.session_state.display_history.append({"role": "assistant", "text": answer})
+        st.session_state.display_history.append({"role": "assistant", "text": answer or ""})
         st.rerun()
 

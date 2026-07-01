@@ -176,6 +176,21 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
 
 [data-testid="stFileUploaderDropzone"] button:hover { background: #E8520E !important; }
 
+/* File row — lighten the dark background */
+[data-testid="stFileUploaderFile"],
+[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+    background: #F8F6F3 !important;
+    border: 1px solid #E8E2DC !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stFileUploaderFileName"],
+[data-testid="stFileUploaderFile"] span,
+[data-testid="stFileUploaderFile"] small,
+[data-testid="stFileUploaderFile"] p {
+    color: #111 !important;
+}
+
 /* Delete button — targeted by aria-label since DOM nesting is unreliable */
 button[aria-label^="Remove "] {
     background: #F0EDE8 !important;

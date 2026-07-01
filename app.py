@@ -11,6 +11,7 @@ import time
 
 import streamlit as st
 from dotenv import load_dotenv
+from gtts import gTTS
 from PIL import Image
 from google import genai
 from google.genai import types
@@ -32,6 +33,19 @@ LANGUAGES = {
     "বাংলা (Bengali)": "Bengali",
     "ગુજરાતી (Gujarati)": "Gujarati",
     "ਪੰਜਾਬੀ (Punjabi)": "Punjabi",
+}
+
+TTS_LANG_MAP = {
+    "English": "en",
+    "Hindi": "hi",
+    "Tamil": "ta",
+    "Telugu": "te",
+    "Kannada": "kn",
+    "Malayalam": "ml",
+    "Marathi": "mr",
+    "Bengali": "bn",
+    "Gujarati": "gu",
+    "Punjabi": "pa",
 }
 
 MAINTENANCE_PROMPT = """Look through this bike manual and extract ALL periodic maintenance tasks with their service intervals.
@@ -531,6 +545,15 @@ def extract_maintenance(client: genai.Client, manual_file) -> list:
     return json.loads(raw)
 
 
+def text_to_speech(text: str, language: str) -> bytes:
+    lang_code = TTS_LANG_MAP.get(language, "en")
+    tts = gTTS(text=text, lang=lang_code, slow=False)
+    buf = io.BytesIO()
+    tts.write_to_fp(buf)
+    buf.seek(0)
+    return buf.read()
+
+
 def maintenance_status(item: dict, current_km: int, last_km: int) -> tuple[str, str]:
     """Return (label, css_class) for a maintenance item."""
     km_int = item.get("interval_km")
@@ -568,6 +591,11 @@ def load_manual(pdf_bytes: bytes, filename: str, model_name: str, language: str)
     with st.spinner("Reading your manual… ~10 seconds"):
         manual_file = upload_pdf(client, pdf_bytes, name)
         chat = create_chat(client, manual_file, language)
+    # Clear any cached TTS audio from previous session
+    for key in list(st.session_state.keys()):
+        if key.startswith("tts_audio_"):
+            del st.session_state[key]
+
     st.session_state.update({
         "chat": chat,
         "manual_name": name,
@@ -708,12 +736,25 @@ if not st.session_state.chat:
 # ── Troubleshoot ─────────────────────────────────────────────────────────────
 
 if True:
-    for msg in st.session_state.display_history:
+    for i, msg in enumerate(st.session_state.display_history):
         avatar = "👤" if msg["role"] == "user" else "🏍️"
         with st.chat_message(msg["role"], avatar=avatar):
             if msg.get("image_bytes"):
                 st.image(msg["image_bytes"], width=300)
             st.markdown(msg["text"])
+
+            if msg["role"] == "assistant":
+                tts_key = f"tts_audio_{i}"
+                if st.button("🔊 Listen", key=f"tts_btn_{i}"):
+                    with st.spinner("Generating audio…"):
+                        try:
+                            st.session_state[tts_key] = text_to_speech(
+                                msg["text"], st.session_state.applied_lang
+                            )
+                        except Exception as exc:
+                            st.error(f"Audio error: {exc}")
+                if st.session_state.get(tts_key):
+                    st.audio(st.session_state[tts_key], format="audio/mp3")
 
     with st.form("input_form", clear_on_submit=True):
         question = st.text_area(

@@ -160,24 +160,22 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
 
 [data-testid="stFileUploaderDropzone"] button:hover { background: #E8520E !important; }
 
-/* File row — white text, aligned */
-[data-testid="stSidebar"] .e1dmulp2,
-[data-testid="stSidebar"] .e1dmulp2 *,
-[data-testid="stSidebar"] [data-testid="stFileUploaderFile"],
-[data-testid="stSidebar"] [data-testid="stFileUploaderFile"] * {
+/* File uploader row — force white text on the dark background */
+[data-testid="stFileUploaderFile"] [class*="st-emotion-cache-"],
+[data-testid="stFileUploaderFile"] [class*="st-emotion-cache-"] *,
+[data-testid="stFileUploaderFileName"] {
     color: #FFFFFF !important;
 }
 
-/* Keep filename and X on the same line */
-[data-testid="stSidebar"] .e1dmulp2 {
+/* Keep filename and ✕ on same line inside the row */
+[data-testid="stFileUploaderFile"] [class*="st-emotion-cache-"] {
     display: flex !important;
     align-items: center !important;
     flex-direction: row !important;
 }
 
 /* Hide file size */
-[data-testid="stSidebar"] [data-testid="stFileUploaderFile"] small,
-[data-testid="stSidebar"] .e1dmulp2 small {
+[data-testid="stFileUploaderFile"] small {
     display: none !important;
 }
 
@@ -324,20 +322,31 @@ hr { border-color: #F0EDE8 !important; }
 .manual-pill-name { font-size: 0.82rem; font-weight: 600; color: #111 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
 .manual-pill-meta { font-size: 0.7rem; color: #F26522 !important; font-weight: 600; white-space: nowrap; }
 
-/* Manual pill row — keep pill and X button on the same line */
+/* Manual pill row — pill and ✕ on same line */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
     align-items: center !important;
-    gap: 6px !important;
+    gap: 4px !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] .stColumn {
     display: flex !important;
     align-items: center !important;
     padding: 0 !important;
+    min-height: unset !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] .manual-pill {
     margin-bottom: 0 !important;
+}
+
+/* Shrink the ✕ remove button to match pill height */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] .stButton > button {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    min-height: unset !important;
+    height: auto !important;
+    border-radius: 6px !important;
 }
 
 /* ── Hero ── */
@@ -389,6 +398,13 @@ hr { border-color: #F0EDE8 !important; }
     border-radius: 0 6px 6px 0;
     font-size: 0.75rem;
     color: #888 !important;
+}
+
+/* ── Audio recorder — keep default Streamlit dark style, just orange mic ── */
+[data-testid="stAudioInput"] button {
+    background: #F26522 !important;
+    border: none !important;
+    border-radius: 50% !important;
 }
 </style>
 """
@@ -724,11 +740,34 @@ with st.form("input_form", clear_on_submit=True):
         height=95,
         label_visibility="collapsed",
     )
+    st.markdown('<p style="font-size:0.82rem;color:#888;margin:4px 0 2px 0;">🎤 Or speak your question</p>', unsafe_allow_html=True)
+    audio_input = st.audio_input("Speak your question", label_visibility="collapsed")
     img_file = st.file_uploader("📷 Attach an image of the issue (optional)", type=["jpg", "jpeg", "png", "webp"])
     submitted = st.form_submit_button("Send →", type="primary", use_container_width=True)
 
-if submitted and (question.strip() or img_file):
-    text = question.strip() or "What issue does this image show? What does the manual say about it?"
+if submitted and (question.strip() or audio_input or img_file):
+    text = question.strip()
+
+    # Transcribe voice input if no text typed
+    if not text and audio_input:
+        with st.spinner("Transcribing…"):
+            try:
+                audio_bytes = audio_input.read()
+                audio_part = types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
+                resp = client.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=[audio_part, "Transcribe this audio exactly as spoken. Return only the transcription, nothing else."],
+                    config=types.GenerateContentConfig(
+                        thinking_config=types.ThinkingConfig(thinking_budget=0)
+                    ),
+                )
+                text = resp.text.strip()
+            except Exception as exc:
+                st.error(f"Transcription error: {exc}")
+                st.stop()
+
+    if not text:
+        text = "What issue does this image show? What does the manual say about it?"
     img_bytes = None
     pil_image = None
 

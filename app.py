@@ -133,35 +133,63 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
     border-radius: 10px !important;
 }
 
-/* Hide the large decorative "upload" icon inside instructions — it shows as raw text when Material Symbols font fails */
+/* Hide EVERY material-symbols icon inside the dropzone — they show as raw "upload" text when font fails */
+[data-testid="stFileUploaderDropzone"] .material-symbols-rounded,
 [data-testid="stFileUploaderDropzoneInstructions"] .material-symbols-rounded {
     display: none !important;
 }
 
-/* Browse files button — kind="secondary", NOT the delete button (kind="minimal") */
-[data-testid="stFileUploaderDropzone"] button[kind="secondary"] {
+/* Also hide the first child of dropzoneInstructions (the icon wrapper div) */
+[data-testid="stFileUploaderDropzoneInstructions"] > *:first-child {
+    display: none !important;
+}
+
+/* Nuclear button fix: wipe all native content, inject clean label via ::after */
+[data-testid="stFileUploaderDropzone"] button {
     background: #F26522 !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 5px 14px !important;
-    color: #fff !important;
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
+    padding: 6px 16px !important;
     box-shadow: none !important;
     transform: none !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    line-height: 1 !important;
+    min-width: 110px !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button[kind="secondary"]:hover {
-    background: #E8520E !important;
+[data-testid="stFileUploaderDropzone"] button * {
+    display: none !important;
+    visibility: hidden !important;
 }
 
-/* Delete/remove button — keep it plain and functional */
+[data-testid="stFileUploaderDropzone"] button::after {
+    content: "Browse files";
+    display: inline !important;
+    visibility: visible !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+    line-height: 1.2 !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button:hover { background: #E8520E !important; }
+
+/* Delete button override — show ✕ instead of "Browse files" */
 [data-testid="stFileUploaderDeleteBtn"] button {
     background: transparent !important;
     border: 1px solid #E8E2DC !important;
     border-radius: 6px !important;
+    padding: 3px 10px !important;
+    min-width: unset !important;
+}
+
+[data-testid="stFileUploaderDeleteBtn"] button::after {
+    content: "✕" !important;
     color: #888 !important;
-    padding: 2px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
 }
 
 /* ── Primary buttons ── */

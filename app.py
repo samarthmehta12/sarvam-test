@@ -111,6 +111,8 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
 [data-testid="stSidebar"] * { color: #111111 !important; }
 
 [data-testid="stSidebar"] [data-baseweb="input"],
+[data-testid="stSidebar"] [data-baseweb="base-input"],
+[data-testid="stSidebar"] .stTextInput div,
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
     background: #F8F6F3 !important;
     border: 1px solid #E8E2DC !important;
@@ -119,22 +121,17 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
     color: #111 !important;
 }
 
-[data-testid="stSidebar"] [data-baseweb="input"]:focus-within,
-[data-testid="stSidebar"] [data-baseweb="input"]:focus {
-    border-color: #E8E2DC !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-[data-testid="stSidebar"] [data-baseweb="input"] input {
-    background: transparent !important;
+[data-testid="stSidebar"] .stTextInput input,
+[data-testid="stSidebar"] [data-baseweb="input"] input,
+[data-testid="stSidebar"] [data-baseweb="base-input"] input {
+    background: #F8F6F3 !important;
     border: none !important;
     box-shadow: none !important;
     color: #111 !important;
     caret-color: #333 !important;
 }
 
-[data-testid="stSidebar"] [data-baseweb="input"] input::placeholder { color: #BBB !important; }
+[data-testid="stSidebar"] .stTextInput input::placeholder { color: #BBB !important; }
 
 /* ── File uploader ── */
 [data-testid="stFileUploaderDropzone"] {

@@ -176,9 +176,34 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
 
 [data-testid="stFileUploaderDropzone"] button:hover { background: #E8520E !important; }
 
-/* Hide delete button entirely — "Browse files" replaces the file anyway */
-[data-testid="stFileUploaderDeleteBtn"] {
+/* Delete button — targeted by aria-label since DOM nesting is unreliable */
+button[aria-label^="Remove "] {
+    background: #F0EDE8 !important;
+    border: 1px solid #E8E2DC !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    min-width: unset !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+button[aria-label^="Remove "] * {
     display: none !important;
+    visibility: hidden !important;
+}
+
+button[aria-label^="Remove "]::after {
+    content: "✕" !important;
+    display: inline !important;
+    visibility: visible !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #888 !important;
+    line-height: 1 !important;
 }
 
 /* ── Primary buttons ── */

@@ -176,20 +176,9 @@ button[data-testid="stSidebarCollapseButton"] { display: none !important; visibi
 
 [data-testid="stFileUploaderDropzone"] button:hover { background: #E8520E !important; }
 
-/* Delete button override — show ✕ instead of "Browse files" */
-[data-testid="stFileUploaderDeleteBtn"] button {
-    background: transparent !important;
-    border: 1px solid #E8E2DC !important;
-    border-radius: 6px !important;
-    padding: 3px 10px !important;
-    min-width: unset !important;
-}
-
-[data-testid="stFileUploaderDeleteBtn"] button::after {
-    content: "✕" !important;
-    color: #888 !important;
-    font-size: 0.8rem !important;
-    font-weight: 400 !important;
+/* Hide delete button entirely — "Browse files" replaces the file anyway */
+[data-testid="stFileUploaderDeleteBtn"] {
+    display: none !important;
 }
 
 /* ── Primary buttons ── */
